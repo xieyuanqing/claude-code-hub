@@ -3693,6 +3693,13 @@ export class ProxyForwarder {
       });
     }
 
+    // 将 CCH 自己维护的稳定 sessionId 透传给 openai-compatible 下游。
+    // 目的：让像 notion2api 这样的下游把同一个 CCH 会话映射到同一个 conversation/thread。
+    // 仅对 openai-compatible provider 注入，避免无关 provider 接收额外会话元数据。
+    if (provider.providerType === "openai-compatible" && session.sessionId) {
+      overrides["x-cch-session-id"] = session.sessionId;
+    }
+
     if (preserveClientIp) {
       if (xForwardedFor) {
         overrides["x-forwarded-for"] = xForwardedFor;
